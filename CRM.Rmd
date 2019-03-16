@@ -3,7 +3,12 @@ title: "CRM and Loyalty- "
 author: "CB"
 date: "26 février 2019"
 output: html_document
+bibliography: CRM.bib
 ---
+![Une vie de babouine](ncomms11181-f1.jpg)
+
+
+Note^[tiré de @tung_cumulative_2016, les deux courbes represente la survie de babouine exposé à 1, 2 ou plus conditions adverses]
 
 <style type="text/css">
 
@@ -24,37 +29,38 @@ pre {
 }
 </style>
 
-Si les cartes de fidélité ont moins d'attrait, elles n'en restent pas moins le moyen principal pour les marques de suivre la consommation de leurs clients et demeurent un élément clé sur système de gestion de la clientèle (CRM). Les distributeurs, les compagnies aériennes, les hotels, toutes les industries de services qui délivrent des prestations répétées à la guise du client, prétendent à modifier les achats subséquent en récompensation l'achat actuel. Ceci se traduit par une distributions de point à chaque achat, selon des barème plus ou mois complexe, mais dont on suppose qu'ils peuvent affecter l'achat suivant soit en le précipitant, soit en accroissant sa valeur monétaire. 
+Si les cartes de fidélité ont moins d'attrait c'est qu'elles se sont multipliées, se concurrencent par le multihoming, et ont du souvent reconsidérer leur plan de gratification à la baisse, réduisant la valeur des points où relevant les seuils de statut, elles n'en restent pas moins le moyen principal pour les marques de suivre la consommation de leurs clients et demeurent un élément clé du système de gestion de la clientèle (CRM). Sans adhésion, sans  numéro, il n'y a pas de connaissance client.
 
-La question de leur efficacité est posée depuis longtemps. Meyer et benavent, x et x.... l'ont confirmée, mise en cause et ajustée. ( un brief de la litt est nécessaire)
+Les distributeurs, les compagnies aériennes, les hotels, toutes les industries de services qui délivrent des prestations répétées à la guise du client, prétendent à modifier les achats subséquents en récompensant l'achat actuel. Ceci se traduit par une distribution de points à chaque achat, selon des barème plus ou mois complexes, mais dont on suppose qu'ils peuvent affecter l'achat suivant soit en le précipitant, soit en accroissant sa valeur monétaire. 
 
-L'étude qui fait l'objet de ce carnet de note, s'appuie sur un cas caractéristique des analyses qui peuvent être menées sur ce type de données, essentiellement comportementales et transactionnelles. Autrement dit la liste des actes d'achat au cours du temps d'une cohorte de consommateursdont une possède une description sommaire.
+La question de leur efficacité est posée depuis longtemps, elle a été un de nos sujets de recherche (@meyer-waarden_impact_2006, @meyer-waarden_grocery_2009) . (un brief de la litt est nécessaire - à compléter)
 
-Elle suit de près une publication ancienne qui portait sur un cas similaire, et avec une échelle de donnée équivalente.  [BENAVENT, C., & CRIÉ, D. (1998). MESURER L'EFFICACITÉ DES CARTES DE FIDÉLITÉ. Décisions Marketing, (15), 83-90](https://www.jstor.org/stable/40592920). On va y retrouver des éléments analogues, et font de cette étude une réplication positive qui confirme la généralité des résultats obtenus il y a bien longtemps. 
+L'étude qui fait l'objet de ce carnet de note, s'appuie sur un cas caractéristique, et vise à présenter des analyses comportementale de la relation par l'analyse des transactions. Autrement dit la liste des actes d'achat au cours du temps d'une cohorte de consommateursdont une possède une description sommaire.
 
-Cette étude reste cependant méthodolgique et pédagogique, que faire avec une telle struicture de données. 
+Elle suit de près une publication encore plus ancienne qui portait sur un cas similaire, et avec une échelle de donnée équivalente @benavent_mesurer_1998 . On va y retrouver des éléments analogues qui font de cette étude une réplication positive qui confirme la généralité des résultats obtenus il y a bien longtemps. 
+
+Cette étude reste cependant méthodologique et pédagogique et vise à détailler des analyses standards de ce type de structure de données, en particulier l'application de modèle de cox pour analyser la durée de vie des porteurs de carte de fidélité, un modèle linaire hiérarchique pour tester l'effet des récompenses acquises et de différents outils graphiques.
 
 
 #Préparation des données
 
 Les données sont relationnelles, à un niveau minimal. On dispose de 4 fichiers reliés par leur index :
 
- * n fichier de 5000 clients qui ont adhérée au programme de fidélisation en 2010
- * un fichier de leur tickets de caisse sur une période de 4 ans ( lorsqu'ils ont présenté leur carte en caisse - enrivon 57000 achats)
- * un fichier des articles mentionnés dans chaque ticket de caisse (environ 200 000 lignes)
- * un fichier des références des articles et de leurs catégories.
+ * Un fichier de 5000 clients qui ont adhéré au programme de fidélisation en 2010. Ils forment une cohorte, dont on suit retrospectivement (Le recueil des données est réalisée en 2014) les comportements.
+ * Un fichier de leur tickets de caisse sur une période de 4 ans, lorsqu'ils ont présenté leur carte en caisse qui représente 57000 passage en caisse dont on connait la date, le client, et le montant.
+ * un fichier des articles mentionnés dans chaque ticket de caisse (environ 200 000 lignes) et un fichier des références des articles et de leurs catégorie complète de la base, mais on ne les utilisera pas dans l'analyse suivante.
 
-Même simple, cette structure conduit à une gymnastique des données, où pour produire les tableaux à analyser, il va falloir filtrer, merger, agréger. Dans cette esprit on consultera avec profit ce [chapitre d'un excellent ouvrage](https://r4ds.had.co.nz/relational-data.html)
+Même simple, cette structure conduit à une gymnastique des données, où pour produire les tableaux à analyser, il va falloir filtrer, merger, agréger. Dans cette esprit on consultera avec profit ce [chapitre d'un excellent ouvrage](https://r4ds.had.co.nz/relational-data.html) et on en profitera pour se mettre sérieusement à `dplyr`
 
-On retiendra de cette structure dans une repréntation simple le shema suivant. Elle  se contruit dans trois éléments
+On retiendra de cette structure dans une représentation simple le schéma suivant. Elle  se contruit avec trois éléments
 
-* des individus i qui possède des cartaristque Xi aà travrs le temps
-* une liste des évenement qui se déroulent apres le relevé des caractéristiques des sujets et décricvent leur expérience
-* des agrgation qui enrichissent le fichiers des individus de caratère compotemenal : la durée entre le primier ahat et le dernier, 
+* Des individus i qui possèdent des cartaristiques Xi à travers le temps
+* Une liste des évenements qui se déroulent après le relevé des caractéristiques des sujets et décrivent leur expérience de consommation. 
+* Des agrégations qui enrichissent le fichier des individus de caratères comportementale dérivée de la séquence des achat, en particulier  la durée écoulée entre le premier achat et le dernier.
 
-##Initialisation and call for libraries
+##Initialisation
 
-Voici la liste des ^package necessaires pourt nos analyses. 
+Voici la liste des packages néçessaires pour nos analyses. 
 
 ```{r setup, include=TRUE, echo=TRUE, message=FALSE,Warning=FALSE}
 knitr::opts_chunk$set(echo = TRUE, include = TRUE,message=FALSE,Warning=FALSE)
@@ -75,18 +81,25 @@ library(effects)
 library(ape)  #ape est le pacckahe de la phylogénie mais fournit des ressources essentielle pour mieux pratiquer le clusting
 library(gridExtra) #question de mettre des graphique dans un meme espace
 library(viridis) #pour lmes couleurs
+library(knitr) 
+library(kableExtra) 
+library(stargazer) #pour comparer les modèles de regression et de survie
+
+#pour arranger les figures en une
+
 
 #lecture des fichiers
 Customer <- read.csv2("~/AtelierR/botanic/Customer.csv", encoding="UTF-8")
 Customer<-Customer %>% rename(Adhesion=cl_dateadhesion,Genre=cl_civNorm,Naissance=cl_naissance) 
 
-#passage en caisSee (ticket)
-PeC <- read.csv2("~/AtelierR/botanic/EXTRACTION_TICKET.csv")
-PeC<-PeC %>% rename(Montant=tic_totalTTC,Points=tic_pointObtenu,Date=tic_date, magasin=mag_code) 
+#passage en caisse (ticket)
+Purchase<- read.csv2("~/AtelierR/botanic/EXTRACTION_TICKET.csv")
+Purchase<-Purchase %>% rename(Montant=tic_totalTTC,Points=tic_pointObtenu,Date=tic_date, magasin=mag_code) 
 ```
 
 
-one file with two samples : echantillon1 for customer who subscribe to the loyalty card in 2010, the second, echantillon2, are customer active in 2014.
+
+Commencons par représenter l'ensemble des données et donc la distribution dans le temps des achats , ou passage en caisse réalisés, par une cohorte d'adhérents à la carte de fidélité. 
 
 Compte-tenu de la nature historique des données on utilisera largement le package `lubridate` pour manipuler les dates, les temps et les durées.
 
@@ -115,273 +128,262 @@ Customer$C_mail[Customer$courrier_email_sms==1]<-1
 Customer$C_mail[Customer$courrier_email==1]<-1
 Customer$C_mail[Customer$courrier_sms==1]<-1
 
-Customer1<- Customer[c(-5,-6,-7,-8,-16,-17,-18,-19,-20,-21,-22)]
+Customer<- Customer[c(-5,-6,-7,-8,-16,-17,-18,-19,-20,-21,-22)]
 
-Customer1$idclient<-as.factor(Customer1$idclient)
-PeC$idclient<-as.factor(PeC$idclient)
-PeC$Montant<-as.numeric(PeC$Montant)
+Customer$idclient<-as.factor(Customer$idclient)
+Purchase$idclient<-as.factor(Purchase$idclient)
+Purchase$Montant<-as.numeric(Purchase$Montant)
 
-#merge of the customer and purchase.
-Customer1<-subset(Customer1,echantillon1==1)
-PeC1<-merge(PeC,Customer1, by.x="idclient",by.y="idclient", all.x=FALSE, all.y=FALSE, sort=TRUE)
-PeC1<-PeC1[c(-7,-8)]
+#merge of the customer and c1_pf.
+Customer<-subset(Customer,echantillon1==1)
+Purchase<-merge(Purchase,Customer, by.x="idclient",by.y="idclient", all.x=FALSE, all.y=FALSE, sort=TRUE)
+Purchase<-Purchase[c(-7,-8)]
 ```
 
 # Description de la série
 
-Pour obtenir un sens plus concrêt des données en voici une représentation simple : le nombre de transactions journalières effectuées par les clients qui ont adopté la carte en 2010 au cours des quatres années suivantes. On y observe :
-* une saisonnalité prononcée avec un pic au printemps ( quand le jardin se prépare) et en décembre quand il faut trouver des idées de cadeaux
-* une baisse du nombre absolu des achats qui traduit l'attrition, les mebres disparaissent, soit qu'ils n'utilsent plus la carte pour bénéficier des avanatages ( les points) soit qu'ils ne sont plus clients de l'enseigne.
+Pour obtenir un sens plus concrêt des données en voici une représentation simple : le nombre de transactions journalières effectuées par les clients qui ont adopté la carte en 2010 au cours des quatre années suivantes. On y observe :
+ * une saisonnalité prononcée avec un pic au printemps (quand le jardin se prépare) et en décembre quand il faut trouver des idées de cadeaux.
+ * une baisse du nombre absolu des achats qui traduit l'attrition, les membres du programme disparaissent, soit qu'ils n'utilisent plus la carte pour bénéficier des avantages (les points) soit qu'ils ne sont plus clients de l'enseigne.
 
 ```{r time02, caption="Evolution du nombre de passages en caisse"}
-PeC1$Date<-as.POSIXct(PeC1$Date)
-g<-PeC1 %>% 
+Purchase$Date<-as.POSIXct(Purchase$Date) #un format qu'aime lubridate
+g<-Purchase %>% 
   ggplot(aes(Date)) + 
   geom_freqpoly(binwidth = 86400) + labs(title = "Nombre d'achats par jour",caption = "Archives personnelles",x="temps",y="nb de passage en caisse") 
 g
 
-# 86400 seconds = 1 day
+# le choix du binwidth est justifié par ce que  86400 seconds = 1 day
 ```
 
-Pour mieux représenter  la saisonnalité, représentons le nombre moyen d'achats par jour de la semaine, par jour du mois, et par mois de l'année. On y retrouve un fort rythme saisonnier (avril/mai; décembre), un rythme hebdomadaire qui concentre les ventes le we, et dans une importance moins nette des achats un peu plus denses en début de mois. Il n'est pas sur que ce soit déterminant.
+Pour mieux représenter la saisonnalité, identifions le nombre moyen d'achats par jour de la semaine, par jour du mois, et par mois de l'année. On y retrouve un fort rythme saisonnier (avril/mai; décembre), un rythme hebdomadaire qui concentre les ventes le we, et dans une importance moins nette des achats un peu plus denses en début de mois mais c'est à prouver.  Les achats se font vers 11h ou 17h. 
 
-Les achats se font vers 11h ou 17h. Certainbement le we, au printemps et en hivers quand nôel exige sa paet de cadeau.
-
-
-
-```{r time1}
-g0<-PeC1 %>% 
+```{r time1, caption="saisonnalité des ventes"}
+g0<-Purchase %>% 
   mutate(heures = hour(Date)) %>% 
   ggplot(aes(x = heures)) + geom_bar(fill="orange")+theme_minimal()
 
-g1<-PeC1 %>% 
+g1<-Purchase %>% 
   mutate(wday = wday(Date, label = TRUE)) %>% 
   ggplot(aes(x = wday)) + geom_bar(fill="orange")+theme_minimal()
 
 
-g2<-PeC1 %>% 
+g2<-Purchase %>% 
   mutate(mday = mday(Date)) %>% 
   ggplot(aes(x = mday)) +  geom_bar(fill="coral3")+theme_minimal()
 
-g3<-PeC1 %>% 
+g3<-Purchase %>% 
   mutate(Month = month(Date, label = TRUE)) %>% 
   ggplot(aes(x = Month)) +geom_bar(fill="brown")+theme_minimal()
 
 grid.arrange(g0,g1,g2,g3,nrow=2)
 ```
 
-http://rstudio-pubs-static.s3.amazonaws.com/5896_8f0fed2ccbbd42489276e554a05af87e.html
 
 #Analyse de l'attrition
 
-c'est un enjeu essentiel que de comprendre l'attrition des clients. Pour l'apprécier, on emploie les ressource de l'analyse de survie. Comment modéliser les chance qu'un souscripteur à la carte soit toujours client au boût d'un temps t ? 
+C'est un enjeu essentiel que de comprendre l'attrition des clients. Pour l'apprécier, on emploie les ressource de l'analyse de survie. Comment modéliser les chance qu'un souscripteur à la carte soit toujours client au bout d'une durée t ? 
+
 
 ##les durées de vie des clients
 
-Examinons les durées écoulées entre l'adhésion et le dernier achat. On trouve des pics annuels qui correspondent vraisembablement  aux dates de renouvellement, ou plutôt de non-renouvelement de la carte. Ils sont à peu près annuel (365 jours). On note naturellement le pic initial correspondant aux achats uniques, ce qui ont été produit au momenent de l'adhésion et n'ont fait l'enregistrement ultérieurs d'autres achats. Soit que les clients aient disparus, soit qu'ils n'utilisent pas leur carte.
+Examinons les durées écoulées entre l'adhésion et le dernier achat. On trouve des pics annuels qui correspondent vraisembablement  aux dates de renouvellement, ou plutôt de non-renouvelement de la carte. Ils sont à peu près annuel (365 jours). On note naturellement le pic initial correspondant aux achats uniques, ceux qui ont été produit au moment de l'adhésion et n'ont pas fait d'autres achats. Soit que les clients aient disparus, soit qu'ils n'utilisent pas leur carte.
+
+On calcule séparemment sur la base du fichier des achats la plus faible et la plus forte des valeurs ( le premier et le dernier achat) qu'on matche en un fichier donc l'index est l'individu. La durée de vie est calculée en faisant la différente des dates de premier et de dernier achat. Il n'y a plus qu'à examiner l'histogramme des durées de vie ( exprimée en jour).
 
 ```{r duration01, caption ="Distribution des durées de vie"}
-d1<-group_by(PeC1, idclient) %>% summarise(mind = min(Date))
-d2<-group_by(PeC1, idclient) %>% summarise(maxd = max(Date))
-d<-cbind(d1,d2[2])
+c1<-group_by(Purchase, idclient) %>% summarise(mind = min(Date))
+c2<-group_by(Purchase, idclient) %>% summarise(maxd = max(Date))
+c1<-cbind(c1,c2[2])
 
-d<-d %>% mutate(duration=as_date(maxd)-as_date(mind))
-d<-as.data.frame(d)
-g<-ggplot(d,aes(x = duration))+geom_histogram(binwidth =5)+xlim(1,1500)+ annotate("text", x = 500, y = 100, label ="la durée 0 jour n'est pas représentée \n la fréquence de cette modalité est de plus de 800")
+c1<-c1 %>% mutate(duration=as_date(maxd)-as_date(mind))
+c1<-as.data.frame(c1)
+g<-ggplot(c1,aes(x = duration))+geom_histogram(binwidth =5)+xlim(1,1600)+ annotate("text", x = 500, y = 100, label ="la durée 0 jour n'est pas représentée \n la fréquence de cette modalité est de plus de 800")+theme_minimal()
 g
 
 ```
 
 ##Définition de la variable de censure
 
-Ces données se prêtent parfaitement à des analyses de survie, il faut cependant indiquer une censure ( la variable qui signale si à la date de l'étude l'événement s'est produit ou ne s'est pas encore produit, implicant que la durée mesrée est la durée minimale et qu'on en connaît pas encore la valeur exacte). On peut s'appuyer sur deux méthodes :
+Ces données se prêtent parfaitement à des analyses de survie, il faut cependant indiquer si ces durées sont censurée ou pas. Autrement dit  quelque soit leur durée, si l'evenement a été observé ou pas. Cet évenement est la disparition du client qui ne refaira plus d'autres achats. S'il n'est pas observé, il est probable que la durée d'échat s'étendra audelà de la date d'observation, mais nous ne le savons pas. La cience des modèles de survie c'est de prendre en compte ce facteur pour donner des estimations qui ne soit pas biaisées. On comprend que si on prend les durée telles quelles, on en minise la durée moyenne.
+
+(insérer un graphique des durées)
+
+La censure  est donc la variable qui signale si, à la date de l'étude, l'événement s'est produit ou ne s'est pas encore produit, implicant que la durée mesurée est la durée minimale et qu'on en connaît pas encore la valeur exacte. On peut s'appuyer sur deux méthodes :
 
 * la première prend en compte la date de non renouvellement de la carte de fidélité
 
 * la seconde s'appuie sur l'analyse des achat et un critère simple qui est celui d'un critère de décision discrimant les derniers achats marquant l'arrêt définitif, de ceux qui sont simplement les derniers achats observés.
 
-c'est la seconde méthode que l'on choisit. Le critère de décision va s'appuyer sur le calcul d'une durée écoulée entre le dernier achat observé et la date de l'étude pour tenir compte de la variabilité individuelle.
+c'est la seconde méthode que l'on choisit. Le critère de décision va s'appuyer sur le calcul d'une durée écoulée entre le dernier achat observé et la date de l'étude pour tenir compte de la variabilité individuelle. Si cette durée est significative plus grande que la durée inter-achat, on en déduit que la probabilité que le client a disparu est élevée.
 
-Mais auparavant représenter ces durées. On y retrouve le pic des opportunistes, mais pour ceux qui ont réalisé plus de deux achats on retrouve une distribution centrée sur une trentaine de jour. Le rythme serait ainsi plutôt mensuel.
+Mais auparavant représentons ces durées inter-achats pour ceux qui ont réalisé plus de deux achats. On retrouve une distribution centrée sur une trentaine de jour. Le rythme serait ainsi plutôt mensuel.
 
 
 ```{r duration02, caption ="Censure et durée inter-achat"}
-PeC1$n<-1
-d3<-aggregate(n~idclient,data=PeC1,sum )
-end <- as.POSIXct('2014-1-1')
-d4<-cbind(d,d3[2])  %>% mutate(fq=duration/n) %>% mutate(last= end-maxd ) 
-d4$status<-1
-d4$status[d4$last>2*d4$fq]<-2
-d4$status<-as.factor(d4$status)
-.Table <- with(d4, table(status))
-  cat("\ncounts:\n")
-  print(.Table)
-  cat("\npercentages:\n")
-  print(round(100*.Table/sum(.Table), 2))
-ggplot(d4,aes(x=fq))+geom_histogram(binwidth = 5)
+Purchase$n<-1
+c2<-aggregate(n~idclient,data=Purchase,sum )
+end <- as.POSIXct('2014-1-1') #fixer la date d'étude
+#calculer la duree interachat durée-totale/nombre d'achats et la durée ecoulée depuis le dernier achat - ne garder que ceux qui ont fait deux achats
+c1<-cbind(c1,c2[2])  %>% mutate(fq=duration/n) %>% mutate(last= end-maxd ) %>% filter(n>1)
+#initialiser la censure à 1 
+c1$censure<-1
+#donner la valeur de 2 si la duree ecoulee est superieure à 2x la duree inter achat.
+c1$censure[c1$last>2*c1$fq]<-2
+c1$censure<-as.factor(c1$censure)
+#afficher la distribution des durées interachats
+ggplot(c1,aes(x=fq,group=censure))+geom_density(binwidth = 10)+xlim(0,400)+ labs(x = "durée inter-achat (en j)")+theme_minimal()+facet_grid(censure~.)
 ```
 
 
-##une première approche par la méthode de Kaplan meyer
+##Une première approche par la méthode de Kaplan-Meyer
 
-Elle est univarié, elle est actuaire, elle représente les données sans explication sauf à comparer des groupes distincts, elle donne l'allure du phénomène.
+Elle est univarié, elle est actuaire, elle représente les données sans explication sauf à comparer des groupes distincts, elle donne l'allure du phénomène. C'est en 1958 qu'elle a été inventée, en voici le [texte fondamental](https://web.stanford.edu/~lutian/coursepdf/KMpaper.pdf), et un [commentaire collector de 1983](http://www.garfield.library.upenn.edu/classics1983/A1983QS51100001.pdf).
 
-On y relève deux points d'inflexion qui correspondent au ryhtme annuel du renouvellement ( la carte est payante pour une somme modique). Au premier, moins de 400 jours c'est la moitié des adhérents qui disparaissent. Au bout de 3 ans il en reste un peu plus de 20%. 
+On y relève deux points d'inflexion qui correspondent au rythme annuel du renouvellement (la carte est payante pour une somme modique et valable un an). Au premier point, à moins de 400 jours c'est la moitié des adhérents qui disparaissent. Au bout de 3 ans il en reste un peu plus de 20%. 
 
 
 ```{r duration03, caption ="Méthode Kaplan meyer"}
-cox<-merge(d4,Customer, by.x="idclient",by.y="idclient", all.x=FALSE, all.y=FALSE, sort=TRUE)
+c1<-merge(Customer,c1, by.x="idclient",by.y="idclient", all.x=FALSE, all.y=FALSE, sort=TRUE)
 
 #kaplanmeier
-cox$SurvObj <- with(cox, Surv(duration, status.x == 2))
-km.as.one <- survfit(SurvObj ~ 1, data = cox, conf.type = "log-log")
-km.as.one
-plot(km.as.one)
+c1$SurvObj <- with(c1, Surv(duration, censure == 2))
+km <- survfit(SurvObj ~ 1, data = c1, conf.type = "log-log")
+km
+plot(km)
 ```
 
 #Modèle de Cox
 
-Le modèle de cox ajuste une courbe de risque ( ou de survie) par un coefficient lié à des variables explicative, sa propriété est de conserver au cours du temps les rapports de risque.
+Le génie du modèle de Cox est de modéliser le risque en deux composantes. La première est la forme générale du risque qui prend l'allure d'un vecteur numérique du temps, sans aucune spcéfication de loi, un modèle purement paramètrique, qui est pôndéré par une seconde composante, une fonction linéaire des caractériques de l'objet dont on souhaite mesuré la survie. On consultera Cox pour le texte séminal et pour la mise en oeuvre sous.
 
-sa formalisation est la suivante :
+C'est au fond un modèle de régression ou le terme constant est remplacée par une courbe de risque, sa propriété est de conserver au cours du temps les rapports de risque. Sa formalisation est la suivante :
 
-$h_{it}=h_{0,t}}e^{X_{i}\beta}$
+$$h_{it}=h_{0,t}\exp^{X_{i}\beta}$$
 
+On utilise le package `survmining` et pour aller plus loin on consultera avec profits ce [lien](https://www.ncbi.nlm.nih.gov/pmc/articles/PMC5220043/) et le  [suivant](http://www.sthda.com/english/wiki/survival-analysis-basics).
 
-
-On utilise le package survmining et pour aller plus loin on consultera ces liens.
-
-https://www.ncbi.nlm.nih.gov/pmc/articles/PMC5220043/
-
-http://www.sthda.com/english/wiki/survival-analysis-basics
+Dans la séquence suivante on spécifie le modèle, puis avec la fonction `cox.zph` on evalue la proportionnalité des risques. Les deux denières lignes sont destinées à représenter les courbes de survie et de risque cumulé pour une variable qui attire notre intention. C'est une reprensation stratifiée
 
 
-Dans la séquence suivante on spécifie le modèle, puis avec la fonction cox.zph on evalue la proportionnalité des risques. Les deux denières lignes sont destinées à représenter les courbes de survies pour des variables individuelles. 
-
-Une variable semble faire la fifférence : le fait que le souscripteur aie acceptué de donner son addresse terrestre. En acceptant de s'identifier il signale son comportement futur : plus fidèle. On s'apercoit memem quand on examine le diagramme des taux de risque cumulé qu'ils echappe à l'exode de la quatrième année.
-
-```{r duration04, caption ="Méthode cox"}
+```{r duration04, caption ="Méthode de Cox"}
 
 #cox
-res.cox1 <- coxph(SurvObj ~ PROFESSION + C_sms + C_mail + C_email+HABITE+ANIMAUX_chien, data =  cox)
+res.cox1 <- coxph(SurvObj ~  C_sms + C_mail + C_email+HABITE+ANIMAUX_chien, data =  c1)
 res.cox1
 (res.zph1 <- cox.zph(res.cox1))
-plot(res.zph1)
-fit <- survfit(Surv(duration, status.x==2) ~ HABITE, data = cox)
-ggsurvplot(fit, data = cox)
-ggsurvplot(fit, data = cox, fun = "cumhaz")
-
+#plot(res.zph1)
+c1$duration2<-as.numeric(c1$duration)
+fit <- survfit(Surv(duration, censure==2) ~ C_mail, data = c1)
+library(survminer)
+ggsurvplot(fit, data = c1,conf.int = TRUE)
+ggsurvplot(fit, data = c1, fun = "cumhaz",conf.int = TRUE)
 ```
-Ce modèle simple fait le la survie des clients en tant que client fidélisé le résultat de caractéristiques intreinsèque à l'individu. L'exemple des adresse de contact révèle que la fidélité se rélève par le consementement du client à être recontacter. S'il laisse son adresse mail, terrestre ou mobile, c'est qu'il est dans une disposition favorable et la preuve vient de ce que systématique le taux de risque est plus faible pour ceux qui ont donnés leur coordonnées au moement de l'adhésion. Les actes d'achats sont observés de manière postérieure et sont ainsi indépendant de l'état antérieure. La causalité est établie mais sa nature est interprêtée. donner son adresse c'est traduire une attitude persistante.
 
-Les tests de non-proportionnalités sont importants car il permettent de justifier pour les variables introduite dans la partie deterministe du modèle l'idée un effet constant, indépendant du temps. La proportionnalité des taux de risque est fixée dans la nature même du modèle.
+Une variable semble faire la différence : le fait que le souscripteur aie acceptué de donner son addresse terrestre. En acceptant de s'identifier il signale son comportement futur : plus fidèle. On s'apercoit memem quand on examine le diagramme des taux de risque cumulé qu'il échappe à l'exode de la quatrième année.
 
-Considérons  un modèle très simple réduit à une variable binaire : on possède le mail qu'il a donné, on a pas l'information, codé 1 ou 0.Examinons le rapport des risques pour les deuxc modalité
+Ce modèle simple fait de la survie des clients en tant que client fidélisé le résultat de caractéristiques intrinsèque à l'individu. L'exemple des adresse de contact révèle que la fidélité se rélève par le consementement du client à être recontacter. S'il laisse son adresse mail, terrestre ou mobile, c'est qu'il est dans une disposition favorable et la preuve vient de ce que systématique le taux de risque est plus faible pour ceux qui ont donnés leur coordonnées au moement de l'adhésion. Les actes d'achats sont observés de manière postérieure et sont ainsi indépendant de l'état antérieur. La causalité est établie mais sa nature est interprêtée. donner son adresse c'est traduire une attitude persistante.
+
+Les tests de non-proportionnalité sont importants car il permettent de justifier pour les variables introduite dans la partie deterministe du modèle l'idée un effet constant, indépendant du temps. La proportionnalité des taux de risque est fixée dans la nature même du modèle.
+
+Considérons  un modèle très simple réduit à une variable binaire : on possède le mail qu'il a donné ou on a pas l'information codé 1 ou 0.Examinons le rapport des risques pour les deux modalités. Le rato des risque est égal à une constante dont la valeur dépend d'un  paramètre. Les rapport de risques sont constant.
 
 
-${h_{0t}=h_{0,t}}exp{0\beta}}/{h_{0t}=h_{0,t}}e0\beta}}$
+$$\frac{h_{0,t}\exp^{1\beta}}{h_{0,t}\exp^{0\beta}}= \exp^{\beta}$$
 
-il se réduit à la constante h0/h1. Le rapport des probabilité des survies reste constant à travers le temps. Dans nbotre cas ces proportionnalité sont testés par le test rho et par des graphiques. Ces derniers traduisent une parfaite parrallélisme.
 
-####des variables qui varient dans le temps
+Le rapport des probabilités de survie reste constant à travers le temps. Dans notre cas ces proportionnalités sont testées par le test rho et par des graphiques. Ces derniers traduisent une parfaite parrallélisme.
 
-Dans notre cas, d'autres variables que celles qui décrivent les individus sont disponible, en particulier la connaissance des dates d'achat au cours de la vie du client. Il est parfaitement légitime de penser que ces expériences d'achats soient susceptibles d'affecter la continuence des achats ( note de bas de page sur la continuance). Chaque acte d'achat est l'occasion d'éprouver la marque et ses produits, si l'expérience est possitive on s'attend à ce que le client soit incitéà répété et à prolonger sa vie de client. les expériences négatives risque de réduire le temps./
+####Des variables qui varient dans le temps
+
+Dans notre cas, d'autres variables que celles qui décrivent les individus sont disponibles, en particulier la connaissance des dates d'achat au cours de la vie du client. Il est parfaitement légitime de penser que ces expériences d'achats soient susceptibles d'affecter la continuence des achats ( note de bas de page sur la continuance). Chaque acte d'achat est l'occasion d'éprouver la marque et ses produits, si l'expérience est possitive on s'attend à ce que le client soit incité à répéter et à prolonger sa vie de client. les expériences négatives risque de réduire la survie.
 
 Les actes d'achats sont ainsi des variables qui varient dans le temps et ont un effet présumés qui se distibuent dans le temps en fonction de leur apparition.
 
 le modèle est donc
 
-sur un plan pratique on va utiliser des ressources de 
+sur un plan pratique on va utiliser des ressources de tmerge qui est une fonction difficile à utiliser. Elle crée les variables dont nous avons besoin : des départs, des fins, des censures, des evenements, pour présenter les données sous une forme qui enregistre les individus et les séquences marqué par un début de vie, des évenements, et une fin de vie ou une censure .
 
-d'abord structré les données convenablemen
+i tstart tstop evenement actions censure
+1  0        50              1       
+1 51        102             1       
+1 103       116     1               1 
+2
+2
 
-ensuite formuler le modèle
+pour structurer les données on emploie la fonction tmerge qui est délicate et complexe à mettre en oeuvres, mais ensuite très éfficace pour construire le fichier de données nécessaires. Ce document est utile pour une [première approche](http://daynebatten.com/2016/01/tmerge-customer-churn-data/) et on consultera la [vignette](https://cran.r-project.org/web/packages/survival/vignettes/timedep.pdf), si necessaire on regardera cette présentation (https://www.google.com/url?sa=t&rct=j&q=&esrc=s&source=web&cd=4&cad=rja&uact=8&ved=2ahUKEwiW58Pc5IbhAhWInxQKHVwACNoQFjADegQIBBAC&url=https%3A%2F%2Fww2.amstat.org%2Fmeetings%2Fsdss%2F2018%2Fonlineprogram%2FViewPresentation.cfm%3Ffile%3D304494.pdf&usg=AOvVaw0RCQfeZHAVih5vsiP8Fszl)
 
-l'estimer
+On estime le modèle avec la meme procedure ci-dessus, excepté qu'on introduit dans le modèle deux nouvelles variables : le fait qu'un achat ( un passage caisse, une visite en magasin) soit réalisé, et le cumul des achats réalisés jusqu'au temps t.
+analyser les résultats : on s'apercoit qu'assi bien le cumul des achats que l'evenement achat tendent à 
 
-analyser les résultats
-```{r ticket06, caption="with time covariate"}
-#construirte les données
+```{r duration06, caption="with time covariate"}
+#preparation fichier
 
-base <- tmerge(S_Sa[,1:3], S_Sa[,1:4], id = Pseudo, tstop = duration, had_event = event(duration, Status))
+c1_f<-c1 %>% filter(duration>0)
 
-S$nb<-1
-A<- aggregate(nb  ~ Pseudo+time,data=S, FUN=sum)
-B<- merge(A,S_s,by="Pseudo")
-B$time <-B$time-(B$Date-as.Date("2017-06-12"))
-B <- subset(B, subset=(time>0))
+c1_pf<-merge(c1_f,Purchase[,1:8],by="idclient", all=FALSE)
 
-#newdata <- tmerge(base, B[,1:3], id = Pseudo, action = tdc(time, nb))
-newdata <- tmerge(base, B[,1:3], id = Pseudo, action = event(time, nb))
-#pour garder lgth
-newdata<-merge(newdata, S_Sa, by.x = "Pseudo", by.y = "Pseudo", all=FALSE)
-newdata$Start<-newdata$Start.x
-fit <- coxph(Surv(tstart, tstop, had_event==2) ~ action+Start+lgth, data=newdata)
+c1_pf$time<-round(as.POSIXct(c1_pf$Date)-as.POSIXct('2010-1-1'),0)
 
-summary(fit)
-plot(survfit(fit)) 
+newdata <- tmerge(c1_f, c1_f, id = idclient, action = event(duration,censure))
 
-library(stargazer)
-stargazer(cox_bmt,fit,type = "text")
+newdata2<- tmerge(newdata,c1_pf, id = idclient, purchase = event(time, Montant), cumul=cumevent(time, Montant))
 
-#courbe de survie avec ggplot
-library(survminer)
+fit <- coxph(Surv(tstart, tstop, action==2) ~ C_mail +status+purchase, data=newdata2)
+fit2 <- coxph(Surv(tstart, tstop, action==2) ~ C_mail +status+purchase+cumul, data=newdata2)
 
-g<-ggsurvplot(survfit(fit), data = newdata,
-              size = 2,                 # change line size
-              palette = c("#E7B800", "#2E9FDF"),# custom color palettes
-              conf.int = TRUE,          # Add confidence interval
-              pval = TRUE,              # Add p-value
-              risk.table = TRUE,        # Add risk table
-              risk.table.col = "strata",# Risk table color by groups
-              legend.labs = c("Male", "Female"),    # Change legend labels
-              risk.table.height = 0.25, # Useful to change when you have multiple groups
-              ggtheme = theme_bw()      # Change ggplot2 theme
-              )
-g
+
+stargazer(fit,fit2,type = "text")
 
 ```
 
-####Des variables qui dépendent du temps
+####Des paramètres qui dépendent du temps
 
-on sait donc introduire dans un modèle de survie, le modèle de cox deux types de variables, des variables qui ne changent pas au cours du temps et excercé un effet proportionnel à leur niveau. Si le fait d'être un homme condamne à vivre moins vieux d'une femme, l'age ne compte pas : le rapport des hommes qui disparaissent par rapport à celui des femmes qui disparaissent est le même au cours du temps.
+On sait donc introduire dans un modèle de survie, le modèle de Cox, deux types de variables, des variables invariantes au cours du temps qui exercent un effet proportionnel constant au cours tu temps, et d'autres donc la valeur variant au cours du temps peuvent affecter de manière différentielle les espérances de survie.
 
-On peut imaginer, c'est une variable qui évolue avec le temps, que l'age affecte ce résultat. On traitera alors le sexe comme une variables stratifiée, pour supposer que les fonction de base du risque diffère mais on supposera que au même age , un meme ratio de risuqe s'observe.
+On peut encore envisager des variables dont l'état ne varient pas mais l'effet croit ou décroit avec le temps. Un modèle simple permet de rendre compte de ce type d'effet. Supposons que la survie S dépendent d'une variable X dont le paramètre est a. S=f(X,a). On peut supposer aussi bien que a soit fonction de la durée écoulée. Le temps s'accumulant ( une seconde à la fois conduit à 8600 seconde dans une journée) on aura volontier tendance à utiliser une fonction log : a(t) = a log(t)
 
-les variable dont l'effet varie dans le temps peuvent être modélisé en pondérant des variable par le temps. Si celui ci s'accroit l'effet s'accroity si le paramètre est positif. s'il est négatif on obtient une decroissance
+Si a est positif l'effet s'accroit avec le temps, s'il est négatif il décroit. 
 
-a*f(t)Xi
+C'est ce que nous allons tester. 
 
-la modélisation de la dynamique du paramètre est donc fonction de f(t). si c'est une fonction log, on suppose que que le paramètre s'accroissent de manière décroissante avec le temps. si c'est une foncton exp c'est une croissance ou décroissance exponentielle.
+la modélisation de la dynamique du paramètre est donc fonction de f(t). si c'est une fonction log, on suppose que que le paramètre s'accroit de manière décroissante avec le temps. si c'est une fonction exp c'est une croissance ou décroissance exponentielle selon le signe. 
+
+
+```{r duration07, caption ="Méthode de Cox avec paramètre variant dans le temps"}
+
+#cox
+res.cox1 <- coxph(SurvObj ~  HABITE+ANIMAUX_chien+ C_sms +C_email + C_mail +tt(C_mail), data =  c1, tt = function(x, t, ...) x * log(t+1))
+res.cox1
+#plot(res.zph1)
+```
 
 
 #analyse des tickets de Caisse
 
-Revenons à l'analyse des transactions, et examinons sa distribution. Elle semble suivre une loi exponentielle, ou puissance. On observe des valeurs négatives qui correspondent à des erreurs ou des remboursements. On ne prendra en compte que des valeurs strictement positives.
+Revenons à l'analyse des transactions, et examinons leurs distribution en fonction des montants. Elle semble suivre une loi exponentielle, ou puissance. On observe des valeurs négatives qui correspondent à des erreurs ou des remboursements. 
+
 
 ```{r ticket01}
-ggplot(PeC1, aes(Montant)) + geom_histogram(binwidth=5)+
+ggplot(c1_pf, aes(Montant)) + geom_histogram(binwidth=5)+
 labs(title="distribution des montants",
      y = "Nombre", x="Montant du ticket")+theme_classic()+xlim(-100, 300)
 ```
+
+
+On ne prendra en compte que des valeurs strictement positives.
 
 On exclue de l'analyse les achats opportunistes, ceux qui n'ont lieu qu'une fois et incite à prendre la carte de fidélité pour bénéficier d'un avantage immédiat.La carte joue pour ces clients le rôle d'une promotion. On pourrait s'interroger du la proportion d'entre eux qui aurait réaliser l'achat sans cette opportunité. 
 
 La distribution confirme le raisonnement dans la mesure où les montant sont de l'ordre d'une centaine d'euro. Curieusement une autre population de ticket à faible montant se manifeste : probablement des achateurs de babioles à 10 euros, qui se promenant en profite pour prolonger l'expérience de visite en souscrivant à la carte, mais ils sont peu nombreux, disons une centaine.
 
 ```{r ticket02}
-Cust <-d4%>%select(idclient,mind,maxd,duration,n,fq,status)
-PeC1<-merge(PeC1,Cust, by="idclient",all.x=FALSE, all.y=FALSE, sort=TRUE)%>%filter(Montant>0)%>% filter(n.y>1)
-PeC1<-PeC1 %>% filter(n.y>1)
-T4<-PeC1 %>% filter(n.y==1)
+#c1_pf<-merge(c1_pf,c1, by="idclient",all.x=FALSE, all.y=FALSE, sort=TRUE)%>%filter(Montant>0)%>% filter(n.y>1)
 
-ggplot(T4, aes(Montant)) + geom_histogram(binwidth=5)+
+ggplot(c1_pf, aes(Montant)) + geom_histogram(binwidth=5)+
 labs(title="distribution des montants",
-     y = "Nombre", x="Montant du ticket")+theme_minimal()+xlim(0, 1000)
+     y = "Nombre", x="Montant du ticket")+theme_minimal() +xlim(0, 500)
 
-ggplot(PeC1, aes(Montant)) + geom_histogram(binwidth=5)+
-labs(title="distribution des montants",
-     y = "Nombre", x="Montant du ticket")+theme_minimal()+xlim(0, 500)
 
 ```
 
@@ -393,15 +395,17 @@ Cette loi de concentration  est celle que représente  la courbe de lorentz : ht
 
 l'enjeu c'est de mesurer la concentration du CA par les ventes les plus élevées.
 
-```{r ticket05, caption="Distribution des montants des tickets de caisse"}
-Mediane<-round(median(PeC1$Montant,na.rm = TRUE),2)
-g1<-ggplot(PeC1, aes(Montant)) + stat_ecdf(geom = "step")+
+```{r ticket03, caption="Distribution des montants des tickets de caisse"}
+Mediane<-round(median(c1_pf$Montant,na.rm = TRUE),2)
+g1<-ggplot(c1_pf, aes(Montant)) + stat_ecdf(geom = "step")+
 labs(title="Empirical Cumulative \n Density Function",y = "F(Proportion cumulée)", x="Montant du ticket")+theme_minimal()+xlim(0, 200)+ annotate("text", x=25, y=0.9, label= paste0("Mediane=",Mediane))
 
 
-gini<-round(ineq(PeC1$Montant,type = c("Gini")),2)
+gini<-round(ineq(c1_pf$Montant,type = c("Gini")),2)
 
-g2<-ggplot(PeC1, aes(Montant)) +stat_lorenz(desc = TRUE,size=1.2,color="Darkgreen") +coord_fixed() +geom_abline(linetype = "dashed") +theme_minimal() + annotate("text", x=0.15, y=0.9, label= paste0("indice de Gini=",gini))
+c1_pf<-c1_pf %>% filter(Montant>0)
+g2<-ggplot(c1_pf, aes(Montant)) +stat_lorenz(desc = TRUE,size=1.2,color="Darkgreen") +coord_fixed() +geom_abline(linetype = "dashed") +theme_minimal() + annotate("text", x=0.15, y=0.9, label= paste0("indice de Gini=",gini))
+
 library(gridExtra)
 grid.arrange(g1,g2,ncol=2)
 ```
@@ -414,23 +418,23 @@ On y retrouve le même phénomène.
 
 Pour les montant d'achats, quelques soit les consommateurs classés en termes de nombre d'achat réalisé sur la période, on observe un effet sur les premières périodes : le montant est maximal au premier achat, il se réduit sur une séquence de deux ou trois achats, puis se maintient à un niveau stationnaire qui ne dépend pas de la segmentation. 
 
-Enexplorant avec une courbe d'ajustement souple, on s'aperçoit que les clients qui produiront le plus d'achats sont moins affectés par l'effets d'opportunités, leur dépenses moyennes sont moins elevés que ceux qui ne feront que quelques achats. Mais tous se rejoignent au niveau stationnaire.dès le 4ème ou cinquième achats. 
+En explorant avec une courbe d'ajustement lissée, on s'aperçoit que les clients qui produiront le plus d'achats sont moins affectés par l'effets d'opportunités, leur dépenses moyennes sont moins elevées que ceux qui ne feront que quelques achats. Mais tous se rejoignent au niveau stationnaire.dès le 4ème ou cinquième achat. 
 
 ```{r ticket04, caption="Distribution des montants des tickets de caisse"}
-Seq1 <- PeC1[order(PeC1$idclient,PeC1$Date),]
+Seq1 <- c1_pf[order(c1_pf$idclient,c1_pf$Date),]
 Seq1 <-Seq1%>% group_by(idclient)%>% mutate(rank = dense_rank(Date))%>% ungroup()
-Seq1$Classe_freq[Seq1$n.y==2] <-"2 achats"
-Seq1$Classe_freq[Seq1$n.y==3] <-"3 achats"
-Seq1$Classe_freq[Seq1$n.y==4] <-"4 achats"
-Seq1$Classe_freq[Seq1$n.y==5] <-"5 achats"
-Seq1$Classe_freq[Seq1$n.y>5 & Seq1$n.y<11 ] <-"de  5 à 10 achats"
-Seq1$Classe_freq[Seq1$n.y>10 & Seq1$n.y<16 ] <-"de 11 à 20 achats" 
-Seq1$Classe_freq[Seq1$n.y>15 & Seq1$n.y<21 ] <-"de 16 à 20 achats"
-Seq1$Classe_freq[Seq1$n.y>20 & Seq1$n.y<26 ] <-"de 21 à 25 achats"
-Seq1$Classe_freq[Seq1$n.y>25 & Seq1$n.y<31 ] <-"de 26 à 30 achats"
-Seq1$Classe_freq[Seq1$n.y>30 & Seq1$n.y<41 ] <-"de 31 à 40 achats"
-Seq1$Classe_freq[Seq1$n.y>40 & Seq1$n.y<51 ] <-"de 41 à 50 achats"
-Seq1$Classe_freq[Seq1$n.y>50] <-"plus de 30 achats"
+Seq1$Classe_freq[Seq1$n==2] <-"2 achats"
+Seq1$Classe_freq[Seq1$n==3] <-"3 achats"
+Seq1$Classe_freq[Seq1$n==4] <-"4 achats"
+Seq1$Classe_freq[Seq1$n==5] <-"5 achats"
+Seq1$Classe_freq[Seq1$n>5 & Seq1$n<11 ] <-"de  5 à 10 achats"
+Seq1$Classe_freq[Seq1$n>10 & Seq1$n<16 ] <-"de 11 à 20 achats" 
+Seq1$Classe_freq[Seq1$n>15 & Seq1$n<21 ] <-"de 16 à 20 achats"
+Seq1$Classe_freq[Seq1$n>20 & Seq1$n<26 ] <-"de 21 à 25 achats"
+Seq1$Classe_freq[Seq1$n>25 & Seq1$n<31 ] <-"de 26 à 30 achats"
+Seq1$Classe_freq[Seq1$n>30 & Seq1$n<41 ] <-"de 31 à 40 achats"
+Seq1$Classe_freq[Seq1$n>40 & Seq1$n<51 ] <-"de 41 à 50 achats"
+Seq1$Classe_freq[Seq1$n>50] <-"plus de 30 achats"
 
 Seq2<-aggregate(Montant~rank+Classe_freq,data=Seq1,FUN=mean)
 Seq2$Classe_freq<-as.factor(Seq2$Classe_freq)
@@ -444,20 +448,24 @@ suppressWarnings(print(g))
 
 ```
 
-##Evolution des durée inter-achat au cours du temps
+##Evolution des durées inter-achat au cours du temps
+
+Pour analyser l'évolution des durées inter-achats, on calcule pour chaque segment définis par le nombre total d'achat des ajustements lissés à l'ordre de l'acte d'achat. En procédant ainsi on contrôle l'effet de la succession de l'effet de fréquence propre à chaque individu.
+
+Un modèle de régression simple complète l'analyse descriptive. Il y a bien un effet d'interaction mais faible, en-deça de la quinzaine d'achat. Les achats fréquents, ceux des vrais fidèles, ont une période stationnaire.
 
 ```{r ticket05, caption="Distribution des montants des tickets de caisse"}
 
 pts<-Seq1 %>% group_by(idclient) %>% mutate(Points, ptscum = cumsum(Points))%>% mutate(Montant, prev = lead(Montant, order_by = rank))%>%  mutate(Date, duree = as.numeric(lead(Date, order_by = rank)-Date)) %>% ungroup()
 
 
-ggplot(pts,aes(x=rank,y=duree,group=Classe_freq))+geom_line(aes(color=Classe_freq),size=1.1)+xlim(0,30)+scale_color_viridis(discrete = TRUE)+xlim(1,9)
-
-fit<-lm(log(duree+1)~rank+Classe_freq,data=pts)
-summary(fit)
 g<-ggplot(pts, aes(x=rank,y=duree,group=Classe_freq))+geom_smooth(method = "loess",aes(color=Classe_freq))+xlim(0,10)+scale_color_viridis(discrete = TRUE)+scale_y_continuous(trans='log10')
 suppressWarnings(print(g))
 
+fit1<-lm(log(duree+1)~rank+Classe_freq,data=pts)
+
+fit2<-lm(log(duree+1)~rank+Classe_freq +rank*Classe_freq,data=pts)
+stargazer(fit1,fit2,type="text")
 ```
 
 # l'effet des points de fidélité
@@ -468,21 +476,22 @@ Il s'agira de mieux apprécier les programmes de fidélisation moins dans leur c
 
 ##Effets des points gagnés sur le montant des dépenses
 
-Pour apprécier le problème quelques éléments descriptifs sont utiles. D'une part la distribution des points délivrés, d'autrre part la coorélation entre le montant du ticket de caisse et les points distribués. On 
+Pour apprécier le problème quelques éléments descriptifs sont utiles. D'une part la distribution des points délivrés, d'autre part la corrélation entre le montant du ticket de caisse et les points distribués. On 
 
-A dfroite la distrbton des mois est représentée; elle est troncquée, la médiane est en dessous de 10 pârt achat. au delà de 50 points les cas sont très rare.
+A droite la distribution des mois est représentée; elle est troncquée, la médiane est en dessous de 10 achats. Au delà de 50 points les cas sont très rare.
 
 A gauche le diagramme traduit une écolutrion du barème, si globalement la coorelation est forte, meême determiste par l'allure des alignement de pointsd, on observe un décalege de couleurs qui relevent une augmentayion de la pente :; de 2à10 à 2019  la récompense s'accroit dans un rapport quasi de de 100 euros=15 points directement lisible sur le graphe. 
 
 
 ```{r point00, caption="Distribution des points obtenus"}
-gp1<-ggplot(Seq1, aes(x=Points))+geom_histogram(binwidth = 1)+xlim(0, 100)+theme_minimal()
+gp1<-ggplot(Seq1, aes(x=Points))+geom_histogram(binwidth = 1)+xlim(0, 70)+theme_minimal()
 Seq1$year<-year(Seq1$Date)
-gp2<-ggplot(Seq1, aes(x=Montant, y=Points, color=year))+geom_point(size=0.8)+xlim(0,3500)+ylim(0, 500)+theme_minimal()+geom_smooth()
+gp2<-ggplot(Seq1, aes(x=Montant, y=Points, color=year))+geom_point(size=0.8)+xlim(0,3000)+ylim(0, 400)+theme_minimal()+geom_smooth()
 grid.arrange(gp2,gp1,ncol=2)
 
 ```
-on doit jouer sur le temps, effet des points acquis ou cumulé à t sur les ventes à t+1
+
+On doit jouer sur le temps, effet des points acquis ou cumulé à t sur les ventes à t+1
 
 on observe un bel effet d'interaction : si le stock de point est plus élevé que la moyenne( ex 1 sd audessus) alors l'effet est negatif, si c'est endessous il devient positif. 
 
@@ -507,17 +516,19 @@ summary(M1)
 #avec nmle
 M2<-lme(total_1~ptscum+Points+Points*rank+Points*ptscum,random=~1|magasin/idclient/rank,data=pts)
 summary(M2)
+
 #avec log
 pts_ln<-pts %>%mutate(total_1_L=log(total_1+1),Montant_l=log(Montant+1), Points_l=log(Points+1),ptscum_l=log(ptscum+1),rank_l=log(rank+1))
-M2<-lme(total_1_L~ptscum+Points_l+Points_l*rank_l+Points_l,random=~1|magasin/idclient/rank,data=pts_ln)
-summary(M2)
+M3<-lme(total_1_L~ptscum+Points_l+Points_l*rank_l+Points_l,random=~1|magasin/idclient/rank,data=pts_ln)
+summary(M3)
 
+stargazer(M1,M2,M3, type="text")
 ```
 
-On utilise une fonction de `Ape` pour décomposer les élements de la variance. Dans notre cas la variabilité des individus représente 9.7% de la variance de la composante alétoire du modèle, le rang de l'achat pour 75,3%, seulement 0.7% pour les magasin ce qui indique une grande homogénieté geographiques,  et 14,2% doivent être attribuée à des causes autres propre à chaque achat.
+On utilise une fonction de `Ape` pour décomposer les élements de la variance. Dans notre cas la variabilité des individus représente 9.7% de la variance de la composante alétoire du modèle, le rang de l'achat pour 75,3%, seulement 0.7% pour les magasin ce qui indique une grande homogénéité geographique,  et 14,2% doivent être attribué à des causes autres, propres à chaque achat.
 
 ```{r point02, caption="Composante de la Variance"}
-#avec le package Aper
+#avec le package Ape
 v <- varcomp(M2, TRUE, FALSE)
 v
 plot(v)
@@ -534,26 +545,27 @@ library(MuMIn)
 r.squaredGLMM(M2)
 ```
 
-En dépit du pouvoire très faiblement explicatif de nos variables effets
+En dépit du pouvoir très faiblement explicatif de nos variables effets
+
 ```{r point04, caption="Distribution des montants des tickets de caisse"}
 
-ef <- Effect(c("Points_l","ptscum_l"), M2)
+ef <- Effect(c("Points","ptscum"), M2)
 plot(ef)
-ef <- Effect(c("Points_l","rank_l"),quantiles=seq(0, 1, by=0.25), M2)
+ef <- Effect(c("Points","rank"),quantiles=seq(0, 1, by=0.25), M2)
 plot(ef)
 
 ```
 
 ##Effets des points gagnés sur la durée inter achat
 
-```{r ticketT1, caption="Distribution des montants des tickets de caisse"}
+On laisse le soin au lecteur d'ajuster le code précédent à l'étude des durées inter-achat.
 
-pts$dureel<-log(pts$duree+1)
-M3<-lme(dureel~ptscum*Points,random=~1|idclient/rank,data=pts)
-summary(M3)
-#v <- varcomp(M2, TRUE, FALSE)
-#v
-#plot(v)
-#r.squaredGLMM(M2)
 
-```
+#Conclusion
+
+Deux outils complémentaires pour analyser la dynamique des ventes d'un segment adhérant à un programme de fidélisation à deux niveau d'analyse :
+
+ * le niveau des transactions : en classant selon l'ordre des achats consruire des modèle linéaire à variable retardée ( on explitique t+1 avec t), et en particilier des modèles linéaires hieracharqui pour décomposer la variance résiduelles dans ses différentes sources hypothétoique : la géographie avec le poitn de vente, l'hétérogénéité individuelle ( les individus), et même le rang de l'achat qui indique au moins une expérience grandissant avec le temps et les expériences de la marque.
+
+
+ * le niveau de la relation : au niveau de la relation : comparaison entre des strates, efet statique (systématique au cours du temps) des variables, modélisation de l'effet de variables qui évoluent au cours du temps, en renant en compte des effets instantanés et des effets cumulés, enfin la modélisation de paramètres qui varient dans le temps. 
